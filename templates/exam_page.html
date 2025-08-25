@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ exam.title }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f9f9f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+        }
+        /* Sidebar Purple Theme */
+        .sidebar {
+            width: 200px;
+            background: #182848; /* Purple */
+            padding: 20px;
+            border-right: 2px solid #ddd;
+            height: 100vh;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.1);
+            color: white;
+        }
+        .sidebar h3 {
+            margin-bottom: 15px;
+            font-size: 18px;
+            text-align: center;
+            color: #fff;
+        }
+        .qbtn {
+            width: 40px;
+            height: 40px;
+            margin: 5px;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+            background: #b266ff; /* light purple */
+            color: white;
+            transition: 0.3s;
+        }
+        .qbtn.visited { background: #ffcc00; color: black; }
+        .qbtn.answered { background: #32cd32; color: white; }
+        .qbtn:disabled { background: #ccc; cursor: not-allowed; }
+
+        /* Main Content */
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+        }
+        .exam-container {
+            max-width: 800px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        /* Timer Top Right */
+        .timer-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #ff4500; /* Orange Red */
+        }
+
+        .progress {
+            font-size: 18px;
+            margin-bottom: 20px;
+            font-weight: bold;
+        }
+        .question {
+            margin-bottom: 20px;
+        }
+        .options label {
+            display: block;
+            margin: 8px 0;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        .options input {
+            margin-right: 10px;
+        }
+        .hidden { display: none; }
+        .question-buttons {
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+        }
+        button, .submit-btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 6px;
+            background: #007BFF;
+            color: white;
+            font-size: 15px;
+            cursor: pointer;
+        }
+        button:hover, .submit-btn:hover { background: #0056b3; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+<div class="sidebar">
+    <h3>Questions</h3>
+    {% for q in questions %}
+        <button type="button" class="qbtn" id="btn{{ loop.index0 }}" onclick="showQuestion({{ loop.index0 }})">
+            {{ loop.index }}
+        </button>
+    {% endfor %}
+</div>
+
+<div class="main-content">
+    <div class="exam-container">
+        <h2>{{ exam.title }}</h2>
+
+        <!-- Timer Top Right -->
+        <div class="timer-container" id="timer" data-duration="{{ exam.duration_minutes }}">
+            Time Left:
+        </div>
+
+        <form method="POST" id="examForm">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <!-- Progress text -->
+            <div id="progress" class="progress">Question 1 of {{ questions|length }}</div>
+            
+            {% for q in questions %}
+            <div class="question {% if not loop.first %}hidden{% endif %}" id="q{{ loop.index0 }}">
+                <p><strong>{{ loop.index }}.</strong> {{ q.text }}</p>
+                <div class="options">
+                    <label><input type="radio" name="q{{ q.id }}" value="A" onchange="markAnswered({{ loop.index0 }})"> {{ q.option_a }}</label>
+                    <label><input type="radio" name="q{{ q.id }}" value="B" onchange="markAnswered({{ loop.index0 }})"> {{ q.option_b }}</label>
+                    <label><input type="radio" name="q{{ q.id }}" value="C" onchange="markAnswered({{ loop.index0 }})"> {{ q.option_c }}</label>
+                    <label><input type="radio" name="q{{ q.id }}" value="D" onchange="markAnswered({{ loop.index0 }})"> {{ q.option_d }}</label>
+                </div>
+                <div class="question-buttons">
+                    {% if not loop.first %}
+                    <button type="button" onclick="prevQuestion({{ loop.index0 }})" class="nav-btn">Previous</button>
+                    {% endif %}
+                    
+                    {% if not loop.last %}
+                    <button type="button" onclick="nextQuestion({{ loop.index0 }})" class="nav-btn">Next</button>
+                    {% else %}
+                    <button type="submit" class="submit-btn">Submit Exam</button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </form>
+    </div>
+</div>
+
+<script>
+let currentIndex = 0;
+const questions = document.querySelectorAll(".question");
+const progress = document.getElementById("progress");
+const sidebarBtns = document.querySelectorAll(".qbtn");
+const navBtns = document.querySelectorAll(".nav-btn");
+const form = document.getElementById("examForm");
+
+// Show Question
+function showQuestion(index) {
+    questions.forEach((q, i) => {
+        q.classList.toggle("hidden", i !== index);
+    });
+    sidebarBtns[index].classList.add("visited");
+    currentIndex = index;
+    updateProgress();
+}
+function nextQuestion(index) { if (index + 1 < questions.length) showQuestion(index + 1); }
+function prevQuestion(index) { if (index - 1 >= 0) showQuestion(index - 1); }
+function updateProgress() {
+    progress.textContent = `Question ${currentIndex + 1} of ${questions.length}`;
+}
+// Mark Answered
+function markAnswered(index) {
+    sidebarBtns[index].classList.add("answered");
+}
+
+// Timer & Disable after time over
+window.onload = function () {
+    const timerDiv = document.getElementById("timer");
+    let duration = parseInt(timerDiv.getAttribute("data-duration")) * 60; // minutes to seconds
+
+    function updateTimer() {
+        let minutes = Math.floor(duration / 60);
+        let seconds = duration % 60;
+        timerDiv.textContent = "Time Left: " + minutes + ":" + (seconds < 10 ? "0" : "") + seconds;
+
+        if (duration <= 0) {
+            // Disable navigation
+            sidebarBtns.forEach(btn => btn.disabled = true);
+            navBtns.forEach(btn => btn.disabled = true);
+            timerDiv.textContent = "Time Over!";
+            clearInterval(timerInterval);
+
+            // Auto submit
+            form.submit();
+        }
+        duration--;
+    }
+
+    updateTimer(); // first call
+    let timerInterval = setInterval(updateTimer, 1000);
+};
+</script>
+</body>
+</html>

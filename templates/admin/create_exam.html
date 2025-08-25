@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Exam</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+    <h2>Create New Exam</h2>
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>Exam Title:</label><br>
+        <input type="text" name="title" required><br><br>
+        <label>Subject:</label><br>
+        <select name="subject" required>
+            <option value="">--Select--</option>
+            <option value="HTML">HTML</option>
+            <option value="Java">Java</option>
+        </select><br><br>
+        <label>Duration (minutes):</label><br>
+        <input type="number" name="duration" value="30" required><br><br>
+        <button type="submit">Create Exam</button>
+    </form>
+    <p><a href="{{ url_for('admin_index') }}">Back to Dashboard</a></p>
+</div>
+</body>
+</html>

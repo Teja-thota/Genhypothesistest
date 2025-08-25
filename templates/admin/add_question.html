@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Add Question</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+    <h2>Add Question to {{ exam.title }}</h2>
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <label>Question Text:</label><br>
+        <textarea name="text" required></textarea><br><br>
+
+        <label>Option A:</label><br>
+        <input type="text" name="option_a" required><br><br>
+        <label>Option B:</label><br>
+        <input type="text" name="option_b" required><br><br>
+        <label>Option C:</label><br>
+        <input type="text" name="option_c" required><br><br>
+        <label>Option D:</label><br>
+        <input type="text" name="option_d" required><br><br>
+
+        <label>Correct Option (A/B/C/D):</label><br>
+        <input type="text" name="correct" maxlength="1" required><br><br>
+
+        <button type="submit">Add Question</button>
+    </form>
+    <p><a href="{{ url_for('exam_detail', exam_id=exam.id) }}">Back to Exam</a></p>
+</div>
+</body>
+</html>

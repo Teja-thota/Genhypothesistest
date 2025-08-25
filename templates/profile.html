@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ user.username }} - Profile</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- Header -->
+<header class="dashboard-header">
+    <div class="dashboard-logo">
+        <h2>Mock Test Platform</h2>
+    </div>
+    <div class="dashboard-logout">
+        <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+    </div>
+</header>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+    <ul>
+        <li><a href="{{ url_for('profile') }}" class="active">Profile</a></li>
+        <li><a href="{{ url_for('dashboard') }}">Ongoing Exams</a></li>
+        <li><a href="#">History</a></li>
+        <li><a href="#">Settings</a></li>
+        <li><a href="#">Support</a></li>
+    </ul>
+</aside>
+
+<!-- Main Content -->
+<main class="dashboard-content">
+    <h2>{{ user.username }}'s Profile</h2>
+
+    <div class="profile-card">
+        <h3>Personal Information</h3>
+        <ul>
+            <li><strong>Name:</strong> {{ user.username }}</li>
+            <li><strong>Email:</strong> {{ user.email }}</li>
+            <li><strong>Chosen Subject:</strong> {{ user.chosen_subject if user.chosen_subject else 'Not selected' }}</li>
+            <li><strong>Subscription Ends:</strong> {{ user.subscription_end if user.subscription_end else 'Not Active' }}</li>
+        </ul>
+        <a href="{{ url_for('dashboard') }}" class="btn-attempt">Back to Dashboard</a>
+    </div>
+</main>
+
+</body>
+</html>

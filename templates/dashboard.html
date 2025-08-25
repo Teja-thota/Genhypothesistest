@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<!-- Header -->
+<header class="dashboard-header">
+    <div class="dashboard-logo">
+        <h2>Mock Test Platform</h2>
+    </div>
+    <div class="dashboard-logout">
+        <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+    </div>
+</header>
+
+<!-- Dashboard Container -->
+<div class="dashboard-container">
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-toggle" onclick="toggleSidebar()">☰ Menu</div>
+        <ul>
+            <li><a href="{{ url_for('profile') }}" class="active">Profile</a></li>
+            <li><a href="#">Ongoing Exams</a></li>
+            <li><a href="{{ url_for('history') }}">History</a></li>
+            <li><a href="#">Settings</a></li>
+            <li><a href="#">Support</a></li>
+        </ul>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-content">
+        <h2>Welcome, {{ user.username }}</h2>
+        <p>Subscription valid until: {{ user.subscription_end if user.subscription_end else "Not Active" }}</p>
+
+        {% if has_access %}
+        <!-- Available Exams -->
+    <section class="exams-section">
+            <h3>Available Exams ({{ user.chosen_subject }})</h3>
+        <ul class="exam-list">
+            {% for exam in exams %}
+            <li>
+             <div class="exam-info">
+                <span class="exam-title">{{ exam.title }}</span>
+                <span class="exam-duration">Duration: {{ exam.duration_minutes }} mins</span>
+             </div>
+            {% set attempted = results|selectattr('exam_id','equalto',exam.id)|list %}
+            {% if attempted %}
+                <span class="btn-completed">Completed</span>
+            {% else %}
+                <a href="{{ url_for('exam_view', exam_id=exam.id) }}" class="btn-attempt">Attempt</a>
+            {% endif %}
+             </li>
+            {% endfor %}
+        </ul>
+
+    </section>
+
+        <!-- Your Results -->
+        <section class="results-section">
+            <h3>Your Results</h3>
+            <ul class="results-list">
+                {% for r in results %}
+                <li>{{ r.exam.title }} : {{ r.score }}/{{ r.total }} ({{ r.taken_at.strftime('%Y-%m-%d') }})</li>
+                {% endfor %}
+            </ul>
+        </section>
+        {% else %}
+        <p>Please pay and activate subscription to access exams.</p>
+        {% endif %}
+    </main>
+
+</div>
+
+<script>
+function toggleSidebar() {
+    document.getElementById('sidebar').classList.toggle('active');
+}
+</script>
+
+</body>
+</html>

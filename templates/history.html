@@ -1,0 +1,21 @@
+<h2>Your Exam History</h2>
+{% for r in results %}
+<div class="exam-history">
+    <h3>{{ r.exam.title }} ({{ r.taken_at.strftime('%Y-%m-%d %H:%M') }})</h3>
+    <p>Score: {{ r.score }}/{{ r.total }} | Duration: {{ r.duration_seconds }} seconds</p>
+    <ol>
+        {% for q in r.exam.questions %}
+        <li>
+            <p>{{ q.text }}</p>
+            <ul>
+                <li {% if r.answers[q.id|string] == 'A' %}style="font-weight:bold;color:green"{% endif %}>A: {{ q.option_a }}</li>
+                <li {% if r.answers[q.id|string] == 'B' %}style="font-weight:bold;color:green"{% endif %}>B: {{ q.option_b }}</li>
+                <li {% if r.answers[q.id|string] == 'C' %}style="font-weight:bold;color:green"{% endif %}>C: {{ q.option_c }}</li>
+                <li {% if r.answers[q.id|string] == 'D' %}style="font-weight:bold;color:green"{% endif %}>D: {{ q.option_d }}</li>
+            </ul>
+            <p>Correct Answer: {{ q.correct }}</p>
+        </li>
+        {% endfor %}
+    </ol>
+</div>
+{% endfor %}

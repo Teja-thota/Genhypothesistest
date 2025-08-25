@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Your Results</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+<div class="container">
+    <h2>{{ user.username }} - Test Results</h2>
+    <p><a href="{{ url_for('dashboard') }}">Back to Dashboard</a></p>
+
+    {% if results %}
+    <table border="1" cellpadding="8" cellspacing="0">
+        <tr>
+            <th>Exam</th>
+            <th>Score</th>
+            <th>Total</th>
+            <th>Duration (sec)</th>
+            <th>Date</th>
+        </tr>
+        {% for r in results %}
+        <tr>
+            <td>{{ r.exam.title }}</td>
+            <td>{{ r.score }}</td>
+            <td>{{ r.total }}</td>
+            <td>{{ r.duration_seconds }}</td>
+            <td>{{ r.taken_at.strftime('%Y-%m-%d %H:%M') }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <p>No tests taken yet.</p>
+    {% endif %}
+</div>
+</body>
+</html>

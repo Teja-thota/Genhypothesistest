@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pending Users</title>
+</head>
+<body>
+    <h2>Pending Users</h2>
+    <form action="{{ url_for('index') }}" method="get" style="display:inline;">
+        <button type="submit">← Back to Home</button>
+    </form>
+
+    <!-- Approve Pending Users Form -->
+    <form method="POST" action="{{ url_for('pending_users') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <table border="1" cellpadding="5" cellspacing="0">
+            <tr>
+                <th>Select</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Requested At</th>
+            </tr>
+            {% for user in pending_users %}
+            <tr>
+                <td><input type="checkbox" name="approve" value="{{ user.id }}"></td>
+                <td>{{ user.name }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+            </tr>
+            {% endfor %}
+        </table>
+        <br>
+        <button type="submit">Approve Selected Users</button>
+    </form>
+
+    <!-- Approved Users Table -->
+    {% if approved_users %}
+    <h3>Approved Users</h3>
+    <table border="1" cellpadding="5" cellspacing="0">
+        <tr>
+            <th>Username</th>
+            <th>Password</th>
+            <th>Approved At</th>
+        </tr>
+       {% for u in approved_users %}
+       <tr>
+         <td>{{ u['username'] }}</td>
+         <td>{{ u['password'] }}</td>
+         <td>{{ u['approved_at'] }}</td>
+       </tr>
+       {% endfor %}
+    </table>
+    
+    {% endif %}
+    
+</body>
+</html>
+

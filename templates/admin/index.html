@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <h1>Admin Dashboard</h1>
+    <p><a href="{{ url_for('logout') }}">Logout</a></p>
+
+    <h3>Manage Exams</h3>
+    <p><a href="{{ url_for('create_exam') }}">Create New Exam</a></p>
+    <ul>
+        {% for exam in exams %}
+        <li><a href="{{ url_for('exam_detail', exam_id=exam.id) }}">{{ exam.title }}</a> ({{ exam.subject }} | Duration: {{ exam.duration_minutes }} mins)</li>
+        {% endfor %}
+    </ul>
+
+    <h3>Pending Users</h3>
+    <!-- Button to redirect to pending users page -->
+    <p><a href="{{ url_for('pending_users') }}"><button>Approve Pending Users</button></a></p>
+
+    <ul>
+        {% for user in pending_users %}
+        <li>{{ user.name }} ({{ user.email }})</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>

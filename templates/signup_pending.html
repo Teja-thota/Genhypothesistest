@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Signup Request</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="signup-background">
+
+    <div class="signup-container">
+        <h2>Sign Up Request</h2>
+        <form method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <label>Name:</label>
+            <input type="text" name="name" placeholder="Enter your name" required>
+
+            <label>Email:</label>
+            <input type="email" name="email" placeholder="Enter your email" required>
+
+            <label>Message (optional):</label>
+            <textarea name="message" placeholder="Enter UTR ::"></textarea>
+
+            <button type="submit" class="btn-hover">Send Request</button>
+        </form>
+        <p>After submitting, please be patience and wait for admin approval for 1-2 hours.</p>
+    </div>
+
+</body>
+</html>
+

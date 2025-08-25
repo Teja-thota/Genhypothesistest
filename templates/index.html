@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mock Test Platform</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="index">
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, message in messages %}
+            <div class="flash-message {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <img src="{{ url_for('static', filename='logo.png') }}" alt="Logo">
+            <h2>Mock Test Platform</h2>
+        </div>
+        <div class="header-buttons">
+            <a href="{{ url_for('signup') }}" class="btn-3d">Sign Up</a>
+            <a href="{{ url_for('login') }}" class="btn-3d">Login</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <section class="top-performers">
+            <h3>Top Performers</h3>
+            <div class="performer-cards">
+                {% for username, score in top %}
+                <div class="performer-card">
+                    {% if loop.index == 1 %}
+                        <div class="medal gold">🥇</div>
+                    {% elif loop.index == 2 %}
+                        <div class="medal silver">🥈</div>
+                    {% elif loop.index == 3 %}
+                        <div class="medal bronze">🥉</div>
+                    {% else %}
+                        <div class="rank">#{{ loop.index }}</div>
+                    {% endif %}
+                    <div class="name">{{ username }}</div>
+                    <div class="score">{{ score }} pts</div>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+</body>
+</html>

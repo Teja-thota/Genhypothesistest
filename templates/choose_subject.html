@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Choose Subject</title>
+    <style>
+        /* Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+        }
+
+        /* Body Center */
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(135deg, #182848, #4b6cb7);
+        }
+
+        /* Container */
+        .container {
+            background: #fff;
+            padding: 30px 40px;
+            border-radius: 15px;
+            box-shadow: 0px 6px 18px rgba(0,0,0,0.2);
+            text-align: center;
+            width: 350px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .container:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 10px 25px rgba(0,0,0,0.3);
+        }
+
+        /* Heading */
+        .container h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            color: #182848;
+        }
+
+        /* Label */
+        .container label {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        /* Select box */
+        select {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 2px solid #ccc;
+            outline: none;
+            font-size: 16px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        select:hover, select:focus {
+            border-color: #4b6cb7;
+            background: #f0f4ff;
+        }
+
+        /* Button */
+        button {
+            padding: 12px 20px;
+            background: #4CAF50;
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s ease, transform 0.2s ease;
+        }
+
+        button:hover {
+            background: #45a049;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>Choose Your Subject</h2>
+    <form method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <label for="subject">Select Subject:</label>
+        <select id="subject" name="subject" required>
+            <option value="">--Select--</option>
+            <option value="HTML">HTML</option>
+            <option value="Java">Java</option>
+        </select>
+        
+        <button type="submit">Confirm</button>
+    </form>
+</div>
+</body>
+</html>
+
