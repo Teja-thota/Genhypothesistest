@@ -457,4 +457,13 @@ def history():
     results = Result.query.filter_by(user_id=u.id).order_by(Result.taken_at.desc()).all()
     return render_template("history.html", results=results)
 
+# -------------------- Auto apply migrations on startup --------------------
+from flask_migrate import upgrade
+
+with app.app_context():
+    try:
+        upgrade()   # ✅ runs "flask db upgrade" automatically
+        print("✅ Database upgraded successfully")
+    except Exception as e:
+        print("⚠️ Migration failed:", e)
 
