@@ -3,9 +3,12 @@ services:
     name: genhypothesistest
     env: python
     buildCommand: |
-      pip install --upgrade pip
+      python -m pip install --upgrade pip
       pip install -r requirements.txt
     startCommand: gunicorn app:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.9
+      - key: DATABASE_URL
+        value: postgres://tests_gjqa_user:XhpmCFb42y6NTG2Al0bgBepxvq7hbyAr@dpg-d2m3t6jipnbc738rols0-a.oregon-postgres.render.com/tests_gjqa
+
