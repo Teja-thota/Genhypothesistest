@@ -3,12 +3,15 @@ import os, secrets, time
 from datetime import datetime, timedelta
 from functools import wraps
 from flask_migrate import Migrate
-from sqlalchemy.dialects.sqlite import JSON 
+#from flask_migrate import Migrate, upgrade
+#from sqlalchemy.dialects.postgresql import JSON
 
 from flask import Flask, render_template, request, redirect, url_for, session, flash, abort
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import JSON 
 
+# -------------------- App Setup --------------------
 app = Flask(__name__, template_folder="templates", static_folder="static")
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", secrets.token_hex(32))
 app.config["SESSION_COOKIE_HTTPONLY"] = True
@@ -25,6 +28,7 @@ migrate = Migrate(app, db)
 
 # -------------------- Models --------------------
 class PendingUser(db.Model):
+    __tablename__ = "pending_users"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120), nullable=False)
     email = db.Column(db.String(200), nullable=False)
@@ -32,6 +36,7 @@ class PendingUser(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class User(db.Model):
+    __tablename__ = "users"  # Avoid reserved keyword
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     email = db.Column(db.String(200), unique=True, nullable=False)
@@ -44,6 +49,7 @@ class User(db.Model):
     approved_at = db.Column(db.DateTime, nullable=True)
 
 class Exam(db.Model):
+    __tablename__ = "exams"
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(200), nullable=False)
     subject = db.Column(db.String(50), nullable=False)  # HTML or Java
@@ -52,8 +58,9 @@ class Exam(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Question(db.Model):
+    __tablename__ = "questions"
     id = db.Column(db.Integer, primary_key=True)
-    exam_id = db.Column(db.Integer, db.ForeignKey('exam.id'), nullable=False)
+    exam_id = db.Column(db.Integer, db.ForeignKey('exams.id'), nullable=False)
     text = db.Column(db.Text, nullable=False)
     option_a = db.Column(db.Text, nullable=False)
     option_b = db.Column(db.Text, nullable=False)
@@ -63,20 +70,22 @@ class Question(db.Model):
     exam = db.relationship("Exam", backref=db.backref("questions", cascade="all, delete-orphan"))
 
 class Result(db.Model):
+    __tablename__ = "results"
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    exam_id = db.Column(db.Integer, db.ForeignKey('exam.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    exam_id = db.Column(db.Integer, db.ForeignKey('exams.id'), nullable=False)
     score = db.Column(db.Integer, nullable=False)
     total = db.Column(db.Integer, nullable=False)
-    answers = db.Column(db.JSON, nullable=True) 
+    answers = db.Column(JSON, nullable=True) 
     duration_seconds = db.Column(db.Integer, default=0)
     taken_at = db.Column(db.DateTime, default=datetime.utcnow)
     user = db.relationship("User")
     exam = db.relationship("Exam")
 
 class Query(db.Model):
+    __tablename__ = "queries"
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     message = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     user = db.relationship("User")
@@ -114,13 +123,14 @@ def admin_required(f):
             abort(403)
         return f(*args, **kwargs)
     return wrapper
-
 # -------------------- Routes --------------------
 @app.route("/")
 def index():
+    # fixed for PostgreSQL reserved keywords
     top = db.session.query(User.username, db.func.max(Result.score).label('best'))\
-        .join(Result, User.id==Result.user_id)\
-        .group_by(User.username).order_by(db.desc('best')).limit(5).all()
+        .join(Result, User.id == Result.user_id)\
+        .group_by(User.username)\
+        .order_by(db.desc('best')).limit(5).all()
     return render_template("index.html", top=top)
 
 @app.route("/signup", methods=["GET","POST"])
@@ -153,13 +163,10 @@ def login():
             session.clear()
             session["user_id"] = user.id
             flash("Welcome!", "success")
-            
-            # Redirect admin to admin dashboard
             if user.is_admin:
-                return redirect(url_for("admin_index"))  # <-- your admin dashboard route
+                return redirect(url_for("admin_index"))
             else:
-                return redirect(url_for("dashboard"))  # <-- normal user dashboard
-
+                return redirect(url_for("dashboard"))
         flash("Invalid credentials", "error")
     return render_template("login.html")
 
@@ -168,10 +175,10 @@ def login():
 @app.route("/admin")
 @admin_required
 def admin_index():
-    # Example: list pending users and exams
     pending_users = PendingUser.query.order_by(PendingUser.created_at.desc()).all()
     exams = Exam.query.order_by(Exam.created_at.desc()).all()
     return render_template("admin/index.html", pending_users=pending_users, exams=exams)
+
 
 @app.route("/admin/create_exam", methods=["GET", "POST"])
 @admin_required
@@ -457,13 +464,29 @@ def history():
     results = Result.query.filter_by(user_id=u.id).order_by(Result.taken_at.desc()).all()
     return render_template("history.html", results=results)
 
-# -------------------- Auto apply migrations on startup --------------------
-from flask_migrate import upgrade
+if __name__ == "__main__":
+    app.run(debug=True)
 
+# -------------------- Auto-create DB & Admin --------------------
 with app.app_context():
-    try:
-        upgrade()   # ✅ runs "flask db upgrade" automatically
-        print("✅ Database upgraded successfully")
-    except Exception as e:
-        print("⚠️ Migration failed:", e)
+    db.create_all()
 
+    admin_username = "admin1"
+    admin_email = "thotateja314@gmail.com"
+    admin_password = "Admin@143"
+
+    existing = User.query.filter_by(username=admin_username).first()
+    if not existing:
+        hashed = generate_password_hash(admin_password)
+        admin = User(
+            username=admin_username,
+            email=admin_email,
+            password_hash=hashed,
+            plain_password=admin_password,  # store for display
+            is_admin=True
+        )
+        db.session.add(admin)
+        db.session.commit()
+        print(f"✅ Admin account created: {admin_username} / {admin_password}")
+    else:
+        print("ℹ️ Admin already exists")
